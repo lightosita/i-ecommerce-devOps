@@ -1,0 +1,59 @@
+pipeline {
+  agent any
+  options { timestamps() }
+  environment {
+    IMAGE = 'lightosita/nexvion'
+    TAG   = "${env.BUILD_NUMBER}"
+  }
+  stages {
+    stage('Checkout') {
+      steps { checkout scm }
+    }
+    stage('Install Dependencies') {
+      steps {
+        sh 'echo "Static frontend: no package dependencies to install"'
+        sh './scripts/setup.sh'
+      }
+    }
+    stage('Build') {
+      steps { sh 'docker build -f docker/Dockerfile -t $IMAGE:$TAG -t $IMAGE:latest .' }
+    }
+    stage('Test') {
+      steps {
+        sh '''docker run --rm -v "$PWD/application:/app:ro" node:20-alpine \
+              sh -c 'for f in /app/*.js; do node --check "$f" || exit 1; done' '''
+        sh 'test -f application/index.html && test -f application/products.html && test -f application/payment.html'
+      }
+    }
+    stage('Security Checks') {
+      steps {
+        sh 'docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest detect --source /repo --no-banner'
+      }
+    }
+    stage('Image Scan') {
+      steps {
+        sh '''docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest \
+              image --severity CRITICAL --exit-code 1 --no-progress $IMAGE:$TAG'''
+      }
+    }
+    stage('Push Image') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+          sh 'echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin'
+          sh 'docker push $IMAGE:$TAG && docker push $IMAGE:latest'
+        }
+      }
+    }
+    stage('Deploy') {
+      steps { sh './scripts/deploy.sh' }
+    }
+    stage('Health Check') {
+      steps { sh './scripts/health-check.sh' }
+    }
+  }
+  post {
+    success { echo "Deployment Success: build ${env.BUILD_NUMBER}" }
+    failure { echo 'Pipeline failed: check the stage that turned red' }
+    always  { sh 'docker logout || true' }
+  }
+}
