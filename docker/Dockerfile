@@ -1,4 +1,5 @@
 FROM nginx:1.27-alpine
+RUN apk upgrade --no-cache
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY application/ /usr/share/nginx/html/
 EXPOSE 80
