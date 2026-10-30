@@ -1,0 +1,6 @@
+services:
+  nexvion:
+    image: lightosita/nexvion:latest
+    ports:
+      - "80:80"
+    restart: unless-stopped
