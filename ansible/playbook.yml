@@ -1,0 +1,49 @@
+- name: Configure Nexvion server
+  hosts: nexvion
+  become: true
+  tasks:
+    - name: Install Docker and Compose plugin
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - docker-compose-v2
+        state: present
+        update_cache: true
+
+    - name: Start and enable Docker
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add the login user to the docker group
+      ansible.builtin.user:
+        name: azureuser
+        groups: docker
+        append: true
+
+    - name: Create the app directory
+      ansible.builtin.file:
+        path: /opt/nexvion
+        state: directory
+        mode: "0755"
+
+    - name: Copy the Compose file
+      ansible.builtin.copy:
+        src: docker-compose.vm.yml
+        dest: /opt/nexvion/docker-compose.yml
+        mode: "0644"
+
+    - name: Start the application
+      ansible.builtin.command:
+        cmd: docker compose up -d
+        chdir: /opt/nexvion
+
+    - name: Wait for the health endpoint
+      ansible.builtin.uri:
+        url: http://127.0.0.1/health
+        status_code: 200
+      register: result
+      retries: 10
+      delay: 3
+      until: result.status == 200
