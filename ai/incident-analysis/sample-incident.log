@@ -1,0 +1,5 @@
+2026-10-30 22:01:10 INFO  request GET /products 200
+2026-10-30 22:01:15 ERROR db connection timeout after 30s host=db:5432
+2026-10-30 22:01:16 ERROR db connection timeout after 30s host=db:5432
+2026-10-30 22:01:20 WARN  too many connections, retrying
+2026-10-30 22:01:25 INFO  request GET /cart 200
