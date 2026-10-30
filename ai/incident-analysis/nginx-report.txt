@@ -1,0 +1,7 @@
+Incident analysis for ai/incident-analysis/nginx.log
+
+[LOW] Missing resource (3 matching lines)
+  Example     : 127.0.0.1 - - [30/Oct/2026:23:14:22 +0000] "GET /missing.html HTTP/1.1" 404 153 "-" "Wget" "-"
+  Likely cause: Requests for pages or files that do not exist.
+  Investigate : Broken links; Scanners probing the site
+  Remediation : Fix broken links; no action needed for random probes.
