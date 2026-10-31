@@ -1,0 +1,7 @@
+Incident analysis for ai/incident-analysis/sample-incident.log
+
+[HIGH] Database connectivity (3 matching lines)
+  Example     : 2026-10-30 22:01:15 ERROR db connection timeout after 30s host=db:5432
+  Likely cause: Database connectivity or configuration issue.
+  Investigate : Database availability; Network connectivity; Credentials; Connection limits
+  Remediation : Restore database reachability, verify credentials, raise the connection limit.

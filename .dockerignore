@@ -1,0 +1,10 @@
+.git
+.gitignore
+*.md
+terraform
+ansible
+kubernetes
+helm
+monitoring
+logging
+docs
